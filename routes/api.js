@@ -1,0 +1,52 @@
+const express = require('express')
+const router = express.Router()
+const query = require('../utils/db.js')
+const jwt = require('jsonwebtoken')
+
+
+const authorization = (req, res, next) => {
+  let jwtSecretKey = process.env.JWT_SECRET_KEY
+  const token = req.cookies.token
+  if (!token) {
+    return res.sendStatus(403)
+  }
+  try {
+    const data = jwt.verify(token, jwtSecretKey)
+    req.id = data.id
+    req.name = data.first_name + " " + data.last_name
+    return next()
+  } catch {
+    return res.sendStatus(403);
+  }
+}
+
+
+// param can be event or ressource
+router.get('/:param',authorization, async(req, res, next) => {
+  try {
+    const requestedParam = req.params.param
+    let sqlQuery = `SELECT * FROM ${requestedParam}`
+    let requestedQuery = await query(sqlQuery)
+    requestedJsonList = toJsonList(requestedQuery)
+    res.render(requestedParam, requestedJsonList)
+  } catch(err) {
+      const error = new Error("Error! Something went wrongg.");
+      return next(error);
+  }
+})
+
+
+
+function toJsonList(requestedQuery){
+  let requestedList=[]
+  requestedQuery.forEach(item => {
+    requestedList.push(item)
+    requestedList.push(item)
+  });
+  let requestedJsonList = JSON.stringify({items: requestedList})
+  requestedJsonList = JSON.parse(requestedJsonList)
+  return requestedJsonList
+}
+
+
+module.exports = router
