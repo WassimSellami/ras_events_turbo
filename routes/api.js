@@ -26,27 +26,12 @@ router.get('/:param',authorization, async(req, res, next) => {
   try {
     const requestedParam = req.params.param
     let sqlQuery = `SELECT * FROM ${requestedParam}`
-    let requestedQuery = await query(sqlQuery)
-    requestedJsonList = toJsonList(requestedQuery)
-    res.render(requestedParam, requestedJsonList)
+    let requestedList = await query(sqlQuery)
+    res.render(requestedParam, {items: requestedList})
   } catch(err) {
       const error = new Error("Error! Something went wrongg.");
       return next(error);
   }
 })
-
-
-
-function toJsonList(requestedQuery){
-  let requestedList=[]
-  requestedQuery.forEach(item => {
-    requestedList.push(item)
-    requestedList.push(item)
-  });
-  let requestedJsonList = JSON.stringify({items: requestedList})
-  requestedJsonList = JSON.parse(requestedJsonList)
-  return requestedJsonList
-}
-
 
 module.exports = router
